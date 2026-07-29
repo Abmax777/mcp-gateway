@@ -1,0 +1,12 @@
+upstreams:
+  - name: fs
+    command: npx
+    args: ["-y", "@modelcontextprotocol/server-filesystem", "/tmp/gwtest"]
+
+  - name: docs
+    command: npx
+    args: ["-y", "@modelcontextprotocol/server-filesystem", "/tmp/gwdocs"]
+
+  - name: broken
+    command: sleep
+    args: ["300"]

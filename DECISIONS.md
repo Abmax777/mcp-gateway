@@ -22,3 +22,12 @@ Rejected: pin 2025-11-25 (stale on arrival); pin 2026-07-28 only
           (no upstream speaks it).
 Why: version translation across a stable boundary is the gateway's
      reason to exist. Same shape as Treble vendor-interface skew.
+
+## 2026-07-29 — Unbounded connect blocks the entire gateway
+Observed: upstream that starts but never speaks MCP (sleep 300).
+Connect succeeds, ListTools blocks forever, wg.Wait() never returns.
+Two healthy upstreams connected but never served. Gateway never started.
+Root cause: context.Background() with no deadline anywhere.
+Decision: per-upstream connect deadline; expiry = DEGRADED, not fatal.
+Note: liveness != responsiveness. A hung upstream is worse than a dead
+one — dead fails fast, hung fails silently and takes healthy peers with it.

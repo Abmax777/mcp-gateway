@@ -2,7 +2,10 @@ module github.com/Abmax777/mcp-gateway
 
 go 1.26.5
 
-require github.com/modelcontextprotocol/go-sdk v1.7.0-pre.1
+require (
+	github.com/modelcontextprotocol/go-sdk v1.7.0-pre.1
+	gopkg.in/yaml.v3 v3.0.1
+)
 
 require (
 	github.com/google/jsonschema-go v0.4.3 // indirect
