@@ -31,3 +31,15 @@ Root cause: context.Background() with no deadline anywhere.
 Decision: per-upstream connect deadline; expiry = DEGRADED, not fatal.
 Note: liveness != responsiveness. A hung upstream is worse than a dead
 one — dead fails fast, hung fails silently and takes healthy peers with it.
+Verified: SDK does not retain the connect context; defer cancel() is safe.
+
+## 2026-07-29 — Startup degrades, it does not fail fast
+Decision: an upstream that fails to connect is logged and skipped.
+The gateway serves whatever catalog it managed to build.
+Rejected: fail fast if any upstream is down — defensible for a single
+service, wrong for a gateway, where one bad config entry would remove
+access to every healthy upstream.
+Also: connect concurrently, not sequentially. Sequential makes
+"aggregation time vs upstream count" a self-inflicted straight line;
+concurrent makes it flat until the slowest upstream, which is the
+finding worth publishing.
