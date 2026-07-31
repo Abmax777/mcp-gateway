@@ -43,3 +43,12 @@ Also: connect concurrently, not sequentially. Sequential makes
 "aggregation time vs upstream count" a self-inflicted straight line;
 concurrent makes it flat until the slowest upstream, which is the
 finding worth publishing.
+
+## 2026-07-30 — Capabilities are per-capability, not a blanket union
+Pass-through capabilities (logging) require an upstream that serves them.
+Gateway-implemented capabilities (tools.listChanged) require machinery on
+our side and are independent of what upstreams advertise.
+Decision: advertise tools:{} only. listChanged flips to true on the day
+change propagation ships, not before.
+Rejected: naive union over upstream capabilities — would advertise
+listChanged we cannot honour.
