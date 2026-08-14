@@ -127,3 +127,17 @@ Chaos matrix: "upstream killed by version probe, crash-loops under
 supervision." Strongest row so far.
 Also: Postgres reference server is archived anyway (Anthropic handed 13
 reference servers to vendors after AAIF governance transfer, Dec 2025).
+
+## 2026-08-14 — Eval set hand-written against the real 67-tool catalog
+Tasks phrased as a user would ask, not restating tool names — otherwise
+every approach scores 100% on string matching.
+Deliberate confusable pairs: fs__search_files vs gh__search_code (#5/#6),
+fs__edit_file vs fs__write_file (#19, where the wrong answer destroys
+the file).
+Dropped two drafted tasks with no correct answer in the catalog (CI status,
+starred repos). A task no tool can serve poisons recall for every approach.
+Not LLM-generated: a set written by the same class of model that will be
+evaluated measures agreement between models, not tool-selection quality.
+Known gap at 34 tasks: distribution is near one-task-per-tool, which tests
+coverage rather than selection. Remaining tasks weight toward
+high-frequency tools and add vague/multi-step cases.

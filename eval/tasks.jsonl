@@ -32,3 +32,58 @@
 {"id":32,"task":"Delete the incorrect observation about the team meeting time","tool":"mem__delete_observations"}
 {"id":33,"task":"Retrieve details for stored entities Alice and Bob by name","tool":"mem__open_nodes"}
 {"id":34,"task":"Add a note that Sarah was promoted to Lead Engineer","tool":"mem__add_observations"}
+{"id":35,"task":"Replace the API URL in config.env from port 3000 to port 8080","tool":"fs__edit_file"}
+{"id":36,"task":"Add a new item to the end of the dependencies array in package.json without touching the rest of the file","tool":"fs__edit_file"}
+{"id":37,"task":"Fix a typo on line 42 of src/utils/format.ts","tool":"fs__edit_file"}
+{"id":38,"task":"Insert '# TODO: deprecate this helper' right above the export statement in auth.ts","tool":"fs__edit_file"}
+{"id":39,"task":"Find all closed bug reports mentioning 'out of memory' filed in the last quarter","tool":"gh__search_issues"}
+{"id":40,"task":"Check if anyone has reported 'TypeError: Cannot read properties of undefined' yet","tool":"gh__search_issues"}
+{"id":41,"task":"Show me all issues labelled 'good-first-issue' that are still unassigned","tool":"gh__search_issues"}
+{"id":42,"task":"Find issue discussions where @octocat mentioned 'breaking change'","tool":"gh__search_issues"}
+{"id":43,"task":"Submit an official approval on PR #74 with a summary comment 'Looks great, LGTM!'","tool":"gh__pull_request_review_write"}
+{"id":44,"task":"Request changes on PR #12 stating that unit tests are missing for the new parser","tool":"gh__pull_request_review_write"}
+{"id":45,"task":"Leave an inline note on the raw query block in my pending review for PR #99","tool":"gh__add_comment_to_pending_review"}
+{"id":46,"task":"What do we know about Postgres?","tool":"mem__open_nodes"}
+{"id":47,"task":"What do our notes say about Alice and Bob?","tool":"mem__open_nodes"}
+{"id":48,"task":"What did we write down about the frontend architecture?","tool":"mem__open_nodes"}
+{"id":49,"task":"Update both schema.prisma and migration.sql in a single atomic commit on main","tool":"gh__push_files"}
+{"id":50,"task":"Commit the new logo image and updated README.md together on branch 'branding'","tool":"gh__push_files"}
+{"id":51,"task":"Get all three translation files updated in the repo in one go","tool":"gh__push_files"}
+{"id":52,"task":"Read package.json and tsconfig.json side by side to compare compile settings","tool":"fs__read_multiple_files"}
+{"id":53,"task":"Inspect all three environment templates (.env.dev, .env.test, .env.prod) at once","tool":"fs__read_multiple_files"}
+{"id":54,"task":"Check the contents of both client/index.html and server/index.js","tool":"fs__read_multiple_files"}
+{"id":55,"task":"Do we have any saved notes on cloud infrastructure or deployment pipelines?","tool":"mem__search_nodes"}
+{"id":56,"task":"Did anyone mention Kafka in any of our architecture notes?","tool":"mem__search_nodes"}
+{"id":57,"task":"Do we have any saved records talking about salary negotiation?","tool":"mem__search_nodes"}
+{"id":58,"task":"Who on the team has experience with machine learning?","tool":"mem__search_nodes"}
+{"id":59,"task":"The build is broken and I don't know why","tool":"gh__list_commits"}
+{"id":60,"task":"I need to prep for the standup tomorrow","tool":"gh__list_commits"}
+{"id":61,"task":"Someone said this was fixed last week, was it?","tool":"gh__search_issues"}
+{"id":62,"task":"What was I working on before the weekend?","tool":"gh__list_commits"}
+{"id":63,"task":"This function looks wrong but I'm not sure where it's used","tool":"gh__search_code"}
+{"id":64,"task":"Catch me up on what happened in the repo while I was on leave","tool":"gh__list_pull_requests"}
+{"id":65,"task":"We moved our staging database from 3000 to 8080 in config.env","tool":"fs__edit_file","paraphrase_of":35}
+{"id":66,"task":"Drop lodash into the dependencies list in package.json without touching anything else","tool":"fs__edit_file","paraphrase_of":36}
+{"id":67,"task":"There's an extra closing bracket on line 42 of src/utils/format.ts","tool":"fs__edit_file","paraphrase_of":37}
+{"id":68,"task":"auth.ts needs a comment warning people not to use that auth helper in prod","tool":"fs__edit_file","paraphrase_of":38}
+{"id":69,"task":"I need to get both the updated prisma schema and the generated SQL migration committed together","tool":"gh__push_files","paraphrase_of":49}
+{"id":70,"task":"The new SVG asset and the docs update belong in the same commit on the branding branch","tool":"gh__push_files","paraphrase_of":50}
+{"id":71,"task":"I've localized the app into three languages and want them pushed up in one go","tool":"gh__push_files","paraphrase_of":51}
+{"id":72,"task":"Did someone already flag that React 19 breaks our modal transitions?","tool":"gh__search_issues","paraphrase_of":40}
+{"id":73,"task":"Are there any starter tickets left that nobody picked up yet?","tool":"gh__search_issues","paraphrase_of":41}
+{"id":74,"task":"Find whatever octocat was arguing about regarding the breaking API shift last fall","tool":"gh__search_issues","paraphrase_of":42}
+{"id":75,"task":"PR #74 is ready for production, ship it with my stamp of approval","tool":"gh__pull_request_review_write","paraphrase_of":43}
+{"id":76,"task":"Tell the author on PR #12 that we can't merge until they add unit tests for the edge cases","tool":"gh__pull_request_review_write","paraphrase_of":44}
+{"id":77,"task":"Block PR #99 for now because of that potential SQL injection in the raw query handler","tool":"gh__pull_request_review_write"}
+{"id":78,"task":"Tell me everything we've captured so far regarding PostgreSQL","tool":"mem__open_nodes","paraphrase_of":46}
+{"id":79,"task":"Bring up the profile we have on the frontend redesign project","tool":"mem__open_nodes","paraphrase_of":48}
+{"id":80,"task":"Alice just transferred under Bob's reporting chain","tool":"mem__create_relations"}
+{"id":81,"task":"Make sure we remember that Acme Corp is owned by ParentCo","tool":"mem__create_relations"}
+{"id":82,"task":"Harman and KPIT are competing in the same tier-1 automotive space","tool":"mem__create_relations"}
+{"id":83,"task":"Do we know anyone on the team who has Kubernetes certification or cluster experience?","tool":"mem__search_nodes","paraphrase_of":58}
+{"id":84,"task":"What was that trick we saved earlier about speeding up cold starts on AWS Lambdas?","tool":"mem__search_nodes","paraphrase_of":55}
+{"id":85,"task":"Did we ever write down the comp band for senior staff engineers?","tool":"mem__search_nodes","paraphrase_of":57}
+{"id":86,"task":"The disk on the log server is nearly full and I need to know what's eating it","tool":"fs__list_directory_with_sizes"}
+{"id":87,"task":"I'm trying to get my head around how /src is laid out","tool":"fs__directory_tree"}
+{"id":88,"task":"Are we affected by CVE-2026-1142?","tool":"gh__search_commits"}
+{"id":89,"task":"We moved staging off 5432 ages ago, that's stale now","tool":"mem__delete_observations"}
