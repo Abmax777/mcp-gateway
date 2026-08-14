@@ -76,3 +76,32 @@ Enables: per-session tool views for policy (day 7) and semantic
 routing (day 10) with no further restructuring.
 Debt: pagination (PageSize/NextCursor) now unimplemented — fine at 28
 tools, wrong at 60+. Cacheable fields serialize as ttlMs:0/cacheScope:"".
+
+## 2026-08-14 — Background retry with backoff, not on-demand or polling
+Rejected on-demand reconnect: a dead upstream's tools leave the catalog,
+so nothing can call them, so nothing triggers the reconnect. Deadlock.
+Rejected fixed-interval polling: hammers a permanently-dead upstream and
+can't distinguish a 2s blip from a misconfiguration.
+Chosen: one supervisor goroutine per upstream blocked on Wait(),
+exponential backoff 500ms→30s on redial.
+Binder analogue: linkToDeath plus re-registration on restart. Stale-handle
+bug avoided structurally by per-request Lookup — verified by calling a tool
+through a session created after the original died.
+
+## 2026-08-14 — Backoff is dominated by connect timeout on hung upstreams
+Observed: redial attempts 16-17s apart despite 500ms starting backoff.
+The hung upstream consumes the full 10s connect timeout each attempt, so
+real spacing is backoff + timeout.
+Implication: exponential backoff behaves completely differently against a
+refusing peer (fast fail, true exponential) vs a hanging one (timeout floor).
+Chaos matrix row.
+
+## 2026-08-14 — log.Fatalf after acquiring resources is a leak
+Observed: Fatalf on Run's error called os.Exit, skipping every defer
+including reg.Close(). Graceful shutdown was dead code for its first
+two test runs.
+Rule: Fatalf only before anything needing release exists. After that,
+Printf and return.
+Also: context.Canceled from Run on SIGINT is the requested outcome, not
+a failure — errors.Is guard, consuming the %w chains built earlier.
+Debt: an in-flight dial isn't aborted by shutdown; it completes then exits.
