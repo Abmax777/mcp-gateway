@@ -7,6 +7,9 @@ import (
 	"log"
 	"os"
 	"strings"
+	"os/signal"
+	"syscall"
+	"errors"
 
 	"github.com/Abmax777/mcp-gateway/internal/gateway"
 	"github.com/Abmax777/mcp-gateway/internal/registry"
@@ -44,7 +47,9 @@ func loadConfig(path string) (*Config, error) {
 
 func main() {
 	log.SetOutput(os.Stderr)
-	ctx := context.Background()
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
 
 	cfg, err := loadConfig("config.yaml")
 	if err != nil {
@@ -54,13 +59,6 @@ func main() {
 	reg := registry.New()
 	defer reg.Close()
 	reg.Connect(ctx, cfg.Upstreams)
-
-	// if err := reg.Refresh(ctx, "fs"); err != nil {
-	// 	log.Printf("manual refresh: %v", err)
-	// }
-	// if err := reg.Refresh(ctx, "broken"); err != nil {
-	// 	log.Printf("manual refresh: %v", err)
-	// }
 
 	gw := mcp.NewServer(&mcp.Implementation{
 		Name:    "mcp-gateway",
@@ -75,29 +73,8 @@ func main() {
 
 	log.Printf("gateway ready: %d tools", len(reg.Catalog()))
 
-	if err := gw.Run(ctx, &mcp.StdioTransport{}); err != nil {
-		log.Fatalf("serve: %v", err)
+	if err := gw.Run(ctx, &mcp.StdioTransport{}); err != nil && !errors.Is(err, context.Canceled) {
+		log.Printf("serve: %v", err)
 	}
-
-	// catalog := reg.Catalog()
-	// for _, t := range catalog {
-	// 	name := t.Name
-	// 	gw.AddTool(t, func(ctx context.Context, req *mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	// 		route, ok := reg.Lookup(name)
-	// 		if !ok {
-	// 			return nil, fmt.Errorf("no route for tool %q", name)
-	// 		}
-	// 		return route.Session.CallTool(ctx, &mcp.CallToolParams{
-	// 			Name:      route.RemoteName,
-	// 			Arguments: json.RawMessage(req.Params.Arguments),
-	// 			Meta:      req.Params.Meta,
-	// 		})
-	// 	})
-	// }
-
-	// log.Printf("gateway ready: %d tools", len(catalog))
-
-	// if err := gw.Run(ctx, &mcp.StdioTransport{}); err != nil {
-	// 	log.Fatalf("serve: %v", err)
-	// }
+	log.Printf("shutting down")
 }

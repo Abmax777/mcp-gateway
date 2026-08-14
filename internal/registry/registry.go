@@ -47,12 +47,18 @@ type Registry struct {
 	upstreams map[string]*upstream
 	routes    map[string]Route
 	catalog   []*mcp.Tool
+
+	closed  chan struct{}
+	closeOnce sync.Once
+	wg      sync.WaitGroup
+	onChange func(name string)
 }
 
 func New() *Registry {
 	return &Registry{
 		upstreams: map[string]*upstream{},
 		routes:    map[string]Route{},
+		closed:    make(chan struct{}),
 	}
 }
 
@@ -96,6 +102,12 @@ func (r *Registry) Connect(ctx context.Context, cfgs []UpstreamConfig) {
 		r.upstreams[u.name] = u
 	}
 	r.rebuildLocked()
+
+	r.onChange = onChange
+	for _, u := range results {
+		r.wg.Add(1)
+		go r.supervise(u.name)
+	}
 }
 
 func dial(ctx context.Context, c UpstreamConfig, onChange func(name string)) *upstream {
@@ -176,8 +188,9 @@ func (r *Registry) Catalog() []*mcp.Tool {
 }
 
 func (r *Registry) Close() error {
+	r.closeOnce.Do(func() { close(r.closed) })
+
 	r.mu.Lock()
-	defer r.mu.Unlock()
 	var errs []error
 	for _, u := range r.upstreams {
 		if u.session != nil {
@@ -186,6 +199,9 @@ func (r *Registry) Close() error {
 			}
 		}
 	}
+	r.mu.Unlock()
+
+	r.wg.Wait()
 	return errors.Join(errs...)
 }
 
@@ -213,4 +229,91 @@ func (r *Registry) Refresh(ctx context.Context, name string) error {
 	r.rebuildLocked()
 	log.Printf("upstream %q refreshed: %d tools", name, len(res.Tools))
 	return nil
+}
+
+const (
+	backoffMin = 500 * time.Millisecond
+	backoffMax = 30 * time.Second
+)
+
+// supervise watches one upstream for death and redials with backoff.
+func (r *Registry) supervise(name string) {
+	defer r.wg.Done()
+
+	for {
+		r.mu.RLock()
+		u, ok := r.upstreams[name]
+		var session *mcp.ClientSession
+		if ok {
+			session = u.session
+		}
+		r.mu.RUnlock()
+
+		if !ok {
+			return
+		}
+
+		if session != nil {
+			err := session.Wait()
+			select {
+			case <-r.closed:
+				return
+			default:
+			}
+			log.Printf("upstream %q DIED: %v", name, err)
+
+			r.mu.Lock()
+			u.session = nil
+			u.tools = nil
+			u.err = fmt.Errorf("died: %w", err)
+			r.rebuildLocked()
+			r.mu.Unlock()
+		}
+
+		if !r.redial(name) {
+			return
+		}
+	}
+}
+
+// redial retries until success or shutdown. Reports false if shutting down.
+func (r *Registry) redial(name string) bool {
+	backoff := backoffMin
+	for attempt := 1; ; attempt++ {
+		select {
+		case <-r.closed:
+			return false
+		case <-time.After(backoff):
+		}
+
+		r.mu.RLock()
+		u, ok := r.upstreams[name]
+		var cfg UpstreamConfig
+		if ok {
+			cfg = u.cfg
+		}
+		r.mu.RUnlock()
+		if !ok {
+			return false
+		}
+
+		fresh := dial(context.Background(), cfg, r.onChange)
+		if fresh.err != nil {
+			log.Printf("upstream %q redial attempt %d failed: %v", name, attempt, fresh.err)
+			backoff = min(backoff*2, backoffMax)
+			continue
+		}
+
+		r.mu.Lock()
+		u.session = fresh.session
+		u.tools = fresh.tools
+		u.protocol = fresh.protocol
+		u.caps = fresh.caps
+		u.err = nil
+		r.rebuildLocked()
+		r.mu.Unlock()
+
+		log.Printf("upstream %q RECOVERED after %d attempts: %d tools", name, attempt, len(fresh.tools))
+		return true
+	}
 }
