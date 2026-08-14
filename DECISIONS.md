@@ -63,3 +63,16 @@ Rule: never hold the registry lock across an upstream call. Lock, copy
 the route, unlock, then call. A hung upstream must not block writers,
 and RWMutex blocks new readers behind a waiting writer — one slow
 upstream would freeze the whole gateway.
+
+## 2026-08-14 — SDK is transport; gateway owns the catalog
+tools/list and tools/call are handled in AddReceivingMiddleware and
+answered from the registry. AddTool is no longer called at all.
+Rejected: keep AddTool for dispatch, override only tools/list — two
+catalogs that can drift, and hot reload would need RemoveTools+AddTool
+on every change.
+Consequence: SDK emits tools/list_changed only when AddTool/RemoveTools
+mutate the server. Owning the catalog means owning that notification too.
+Enables: per-session tool views for policy (day 7) and semantic
+routing (day 10) with no further restructuring.
+Debt: pagination (PageSize/NextCursor) now unimplemented — fine at 28
+tools, wrong at 60+. Cacheable fields serialize as ttlMs:0/cacheScope:"".

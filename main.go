@@ -55,6 +55,13 @@ func main() {
 	defer reg.Close()
 	reg.Connect(ctx, cfg.Upstreams)
 
+	// if err := reg.Refresh(ctx, "fs"); err != nil {
+	// 	log.Printf("manual refresh: %v", err)
+	// }
+	// if err := reg.Refresh(ctx, "broken"); err != nil {
+	// 	log.Printf("manual refresh: %v", err)
+	// }
+
 	gw := mcp.NewServer(&mcp.Implementation{
 		Name:    "mcp-gateway",
 		Version: "v0.0.1",

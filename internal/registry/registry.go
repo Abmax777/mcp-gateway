@@ -27,6 +27,7 @@ type UpstreamConfig struct {
 
 type upstream struct {
 	name     string
+	cfg      UpstreamConfig
 	session  *mcp.ClientSession
 	tools    []*mcp.Tool
 	protocol string
@@ -56,13 +57,30 @@ func New() *Registry {
 }
 
 func (r *Registry) Connect(ctx context.Context, cfgs []UpstreamConfig) {
+	r.mu.Lock()
+	for _, u := range r.upstreams {
+		if u.session != nil {
+			u.session.Close()
+		}
+	}
+	r.upstreams = map[string]*upstream{}
+	r.mu.Unlock()
+
+	onChange := func(name string) {
+		go func() {
+			if err := r.Refresh(context.Background(), name); err != nil {
+				log.Printf("refresh %q: %v", name, err)
+			}
+		}()
+	}
+
 	results := make([]*upstream, len(cfgs))
 	var wg sync.WaitGroup
 	for i, c := range cfgs {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			results[i] = dial(ctx, c)
+			results[i] = dial(ctx, c, onChange)
 		}()
 	}
 	wg.Wait()
@@ -80,13 +98,18 @@ func (r *Registry) Connect(ctx context.Context, cfgs []UpstreamConfig) {
 	r.rebuildLocked()
 }
 
-func dial(ctx context.Context, c UpstreamConfig) *upstream {
+func dial(ctx context.Context, c UpstreamConfig, onChange func(name string)) *upstream {
 	ctx, cancel := context.WithTimeout(ctx, connectTimeout)
 	defer cancel()
 
-	u := &upstream{name: c.Name}
+	u := &upstream{name: c.Name, cfg: c}
 
-	client := mcp.NewClient(&mcp.Implementation{Name: "mcp-gateway", Version: "v0.0.1"}, nil)
+	client := mcp.NewClient(&mcp.Implementation{Name: "mcp-gateway", Version: "v0.0.1"},
+		&mcp.ClientOptions{
+			ToolListChangedHandler: func(context.Context, *mcp.ToolListChangedRequest) {
+				onChange(c.Name)
+			},
+		})
 	cmd := exec.Command(c.Command, c.Args...)
 	cmd.Stderr = os.Stderr
 
@@ -164,4 +187,30 @@ func (r *Registry) Close() error {
 		}
 	}
 	return errors.Join(errs...)
+}
+
+// Refresh re-lists one upstream's tools and rebuilds the catalog.
+func (r *Registry) Refresh(ctx context.Context, name string) error {
+	r.mu.RLock()
+	u, ok := r.upstreams[name]
+	r.mu.RUnlock()
+
+	if !ok || u.session == nil {
+		return fmt.Errorf("upstream %q not connected", name)
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, connectTimeout)
+	defer cancel()
+
+	res, err := u.session.ListTools(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("refresh %q: %w", name, err)
+	}
+
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	u.tools = res.Tools
+	r.rebuildLocked()
+	log.Printf("upstream %q refreshed: %d tools", name, len(res.Tools))
+	return nil
 }
