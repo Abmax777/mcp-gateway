@@ -2,12 +2,13 @@ package main
 
 import (
 	"context"
-	"encoding/json"
+	//"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"strings"
 
+	"github.com/Abmax777/mcp-gateway/internal/gateway"
 	"github.com/Abmax777/mcp-gateway/internal/registry"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"gopkg.in/yaml.v3"
@@ -63,25 +64,33 @@ func main() {
 		},
 	})
 
-	catalog := reg.Catalog()
-	for _, t := range catalog {
-		name := t.Name
-		gw.AddTool(t, func(ctx context.Context, req *mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-			route, ok := reg.Lookup(name)
-			if !ok {
-				return nil, fmt.Errorf("no route for tool %q", name)
-			}
-			return route.Session.CallTool(ctx, &mcp.CallToolParams{
-				Name:      route.RemoteName,
-				Arguments: json.RawMessage(req.Params.Arguments),
-				Meta:      req.Params.Meta,
-			})
-		})
-	}
+	gw.AddReceivingMiddleware(gateway.Middleware(reg))
 
-	log.Printf("gateway ready: %d tools", len(catalog))
+	log.Printf("gateway ready: %d tools", len(reg.Catalog()))
 
 	if err := gw.Run(ctx, &mcp.StdioTransport{}); err != nil {
 		log.Fatalf("serve: %v", err)
 	}
+
+	// catalog := reg.Catalog()
+	// for _, t := range catalog {
+	// 	name := t.Name
+	// 	gw.AddTool(t, func(ctx context.Context, req *mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	// 		route, ok := reg.Lookup(name)
+	// 		if !ok {
+	// 			return nil, fmt.Errorf("no route for tool %q", name)
+	// 		}
+	// 		return route.Session.CallTool(ctx, &mcp.CallToolParams{
+	// 			Name:      route.RemoteName,
+	// 			Arguments: json.RawMessage(req.Params.Arguments),
+	// 			Meta:      req.Params.Meta,
+	// 		})
+	// 	})
+	// }
+
+	// log.Printf("gateway ready: %d tools", len(catalog))
+
+	// if err := gw.Run(ctx, &mcp.StdioTransport{}); err != nil {
+	// 	log.Fatalf("serve: %v", err)
+	// }
 }

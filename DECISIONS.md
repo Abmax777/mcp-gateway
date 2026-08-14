@@ -52,3 +52,14 @@ Decision: advertise tools:{} only. listChanged flips to true on the day
 change propagation ships, not before.
 Rejected: naive union over upstream capabilities — would advertise
 listChanged we cannot honour.
+
+## 2026-07-31 — Routes resolve per request, not at registration
+Handlers call registry.Lookup(name) at call time instead of capturing
+a session at startup.
+Why: reconnect can swap the session inside the registry and in-flight
+routing picks it up with no re-registration. Capturing at startup would
+pin every handler to a session that reconnect is about to replace.
+Rule: never hold the registry lock across an upstream call. Lock, copy
+the route, unlock, then call. A hung upstream must not block writers,
+and RWMutex blocks new readers behind a waiting writer — one slow
+upstream would freeze the whole gateway.
