@@ -1,0 +1,34 @@
+{"id":1,"task":"What's inside notes.txt in my temp folder?","tool":"fs__read_text_file"}
+{"id":2,"task":"Show me everything under /tmp/gwtest, including subfolders","tool":"fs__directory_tree"}
+{"id":3,"task":"Which files in that folder are taking up the most space?","tool":"fs__list_directory_with_sizes"}
+{"id":4,"task":"Rename draft.md to final.md","tool":"fs__move_file"}
+{"id":5,"task":"Find every .yaml file under the project directory","tool":"fs__search_files"}
+{"id":6,"task":"Find every place in the anthropics/claude-code repo that calls parseConfig","tool":"gh__search_code"}
+{"id":7,"task":"What open issues are assigned to me right now?","tool":"gh__list_issues"}
+{"id":8,"task":"Who has write access to this repository?","tool":"gh__list_repository_collaborators"}
+{"id":9,"task":"What changed in the last release?","tool":"gh__get_latest_release"}
+{"id":10,"task":"I need to see the discussion on PR 412 before I approve it","tool":"gh__pull_request_read"}
+{"id":11,"task":"Remember that Ananya is a doctor based in NCR","tool":"mem__create_entities"}
+{"id":12,"task":"What do I know about the KPIT interview?","tool":"mem__search_nodes"}
+{"id":13,"task":"What are the last commits i made?","tool":"gh__list_commits"}
+{"id":14,"task":"Who are collaborating on webscapes repo?","tool":"gh__get_teams"}
+{"id":15,"task":"Check if the file config.json exists before I write to it","tool":"fs__get_file_info"}
+{"id":16,"task":"Read config.yaml, dev.yaml, and prod.yaml all at once","tool":"fs__read_multiple_files"}
+{"id":17,"task":"Create a new directory called 'my-new-project'","tool":"fs__create_directory"}
+{"id":18,"task":"Open and inspect the photo screenshot.png in my downloads folder","tool":"fs__read_media_file"}
+{"id":19,"task":"Append 'export PATH=$PATH:/custom/bin' to the end of .bashrc","tool":"fs__edit_file"}
+{"id":20,"task":"Find public repositories about kotlin coroutines","tool":"gh__search_repositories"}
+{"id":21,"task":"Create a new branch called 'feature/user-auth' to start committing work","tool":"gh__create_branch"}
+{"id":22,"task":"Search open issues to see if this login bug has already been reported","tool":"gh__search_issues"}
+{"id":23,"task":"Show me the files changed and discussion in PR #105","tool":"gh__pull_request_read"}
+{"id":24,"task":"What is my current GitHub username?","tool":"gh__get_me"}
+{"id":25,"task":"Leave a review comment on line 40 of PR #52","tool":"gh__pull_request_review_write"}
+{"id":26,"task":"Find the GitHub profile associated with user@example.com","tool":"gh__search_users"}
+{"id":27,"task":"Get the diff and commit details for commit 4a8b12f","tool":"gh__get_commit"}
+{"id":28,"task":"Merge approved PR #89 into the main branch","tool":"gh__merge_pull_request"}
+{"id":29,"task":"Remember that I had an interview at KPIT on August 3rd","tool":"mem__create_entities"}
+{"id":30,"task":"Record that KPIT and Harman are both automotive companies","tool":"mem__create_relations"}
+{"id":31,"task":"Dump everything currently saved in memory graph","tool":"mem__read_graph"}
+{"id":32,"task":"Delete the incorrect observation about the team meeting time","tool":"mem__delete_observations"}
+{"id":33,"task":"Retrieve details for stored entities Alice and Bob by name","tool":"mem__open_nodes"}
+{"id":34,"task":"Add a note that Sarah was promoted to Lead Engineer","tool":"mem__add_observations"}

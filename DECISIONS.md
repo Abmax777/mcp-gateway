@@ -105,3 +105,25 @@ Printf and return.
 Also: context.Canceled from Run on SIGINT is the requested outcome, not
 a failure — errors.Is guard, consuming the %w chains built earlier.
 Debt: an in-flight dial isn't aborted by shutdown; it completes then exits.
+
+## 2026-08-14 — server/discover can kill an upstream that predates it
+Observed: crystaldba/postgres-mcp (Python SDK, pre-2026-07-28) receives
+server/discover, fails pydantic validation against all 24 known request
+types, propagates out of the receive loop, and the process exits.
+Supervisor redials, fresh container crashes identically, forever.
+Filesystem server survives the same probe — rejects cleanly, Go SDK falls
+back to initialize, negotiates 2025-11-25.
+So: probe-based negotiation is only safe if every peer rejects unknown
+methods gracefully. In the wild they don't.
+The spec has a correct path for this — UnsupportedProtocolVersionData
+(SEP-2575), an error listing supported versions. Old servers can't use it
+because they predate it.
+No client-side version pin exists in go-sdk v1.7.0-pre.1.
+ProtocolVersionSupporter is server-side only (filters what Server.Connect
+advertises), not a way to constrain what our client requests.
+Decision: drop postgres upstream. Document as a known limitation needing
+SDK support. Do NOT fork the transport — a day's work for one upstream.
+Chaos matrix: "upstream killed by version probe, crash-loops under
+supervision." Strongest row so far.
+Also: Postgres reference server is archived anyway (Anthropic handed 13
+reference servers to vendors after AAIF governance transfer, Dec 2025).
